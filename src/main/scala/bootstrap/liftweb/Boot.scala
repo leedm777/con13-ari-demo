@@ -19,8 +19,6 @@ class Boot extends Loggable {
       Menu.i("Home") / "index" ::
         Nil
 
-    // set the sitemap.  Note if you don't want access control for
-    // each page, just comment this line out.
     LiftRules.setSiteMap(SiteMap(entries: _*))
 
     //Show the spinny image when an Ajax call starts
