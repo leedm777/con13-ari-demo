@@ -63,6 +63,9 @@
     <orderEntry type="library" name="SBT: ch.qos.logback:logback-classic:1.0.13" level="project" />
     <orderEntry type="library" name="SBT: ch.qos.logback:logback-core:1.0.13" level="project" />
     <orderEntry type="library" name="SBT: org.slf4j:slf4j-api:1.7.5" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.httpcomponents:httpclient:4.3" level="project" />
+    <orderEntry type="library" name="SBT: org.apache.httpcomponents:httpcore:4.3" level="project" />
+    <orderEntry type="library" name="SBT: commons-logging:commons-logging:1.1.3" level="project" />
     <orderEntry type="library" name="SBT: org.eclipse.jetty.websocket:websocket-client:9.0.5.v20130815" level="project" />
     <orderEntry type="library" name="SBT: org.eclipse.jetty:jetty-util:9.0.5.v20130815" level="project" />
     <orderEntry type="library" name="SBT: org.eclipse.jetty:jetty-io:9.0.5.v20130815" level="project" />

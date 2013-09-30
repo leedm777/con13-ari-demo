@@ -1,16 +1,16 @@
 package bootstrap.liftweb
 
-import net.liftweb.util._
 import net.liftweb.common._
 import net.liftweb.http._
 import net.liftweb.sitemap._
+import com.digium.con13.model.Asterisk
 
 /**
  * A class that's instantiated early and run.  It allows the application
  * to modify lift's environment
  */
 class Boot extends Loggable {
-  def boot {
+  def boot() {
     // where to search snippet
     LiftRules.addToPackages("com.digium.con13")
 
@@ -40,8 +40,9 @@ class Boot extends Loggable {
       case js@("css" :: _) if js.last.endsWith(".css") => true
     }
 
+    Asterisk.connect()
+    LiftRules.unloadHooks.append(Asterisk.shutdown)
+
     logger.info("Ready to serve")
-
-
   }
 }

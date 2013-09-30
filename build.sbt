@@ -28,7 +28,8 @@ libraryDependencies ++= {
 }
 
 libraryDependencies ++= Seq(
-  "ch.qos.logback"    % "logback-classic" % "1.0.13"
+  "ch.qos.logback"    % "logback-classic" % "1.0.13",
+  "org.apache.httpcomponents" % "httpclient" % "4.3"
 )
 
 libraryDependencies ++= Seq(
