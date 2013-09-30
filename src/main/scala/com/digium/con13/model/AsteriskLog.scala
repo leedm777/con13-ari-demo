@@ -12,7 +12,11 @@ sealed case class AriMessage(msg: String) extends LogItem
 sealed case class AriEvent(msg: json.JValue) extends LogItem {
   implicit val formats = json.DefaultFormats
 
-  def eventHeader = (msg \\ "type").extract[String]
+  def eventHeader = {
+    val msgType = (msg \\ "type").extract[String]
+    val ids = json.compact(json.render(msg \\ "id"))
+    s"$msgType $ids"
+  }
 
   override def toString: String = json.compact(json.render(msg))
 }
