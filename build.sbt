@@ -32,7 +32,14 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.eclipse.jetty" %  "jetty-webapp" % "8.1.13.v20130916" % "container; test",
   "com.h2database"    %  "h2"           % "1.3.173"          % "runtime",
   "org.scalatest"     %% "scalatest"    % "1.9.2"            % "test"
 )
+
+libraryDependencies ++= {
+  val jettyVersion = "9.0.5.v20130815"
+  Seq(
+    "org.eclipse.jetty"           %  "jetty-webapp"     % jettyVersion % "container; test",
+    "org.eclipse.jetty.websocket" %  "websocket-client" % jettyVersion
+  )
+}
