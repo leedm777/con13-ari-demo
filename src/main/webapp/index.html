@@ -6,9 +6,21 @@
 </head>
 <body class="lift:content_id=main">
 <div id="main" class="lift:Surround?with=default;at=content">
-    <p>Hello, Astricon 2013!</p>
-    <div class="ari-logs row lift:Comet?type=AsteriskLogDisplay">
-        ARI logs
+    <div class="lift:Comet?type=AsteriskController">
+        <button type="button" class="btn btn-default reconnect">
+            <span class="glyphicon glyphicon-refresh"></span> Reconnect
+        </button>
+        <div id="channels">
+            <h1>Channels</h1>
+            <div class="channel"></div>
+        </div>
+        <div id="bridges">
+            <h1>Bridges</h1>
+            <div class="bridge"></div>
+        </div>
+    </div>
+    <div class="ari-logs lift:Comet?type=AsteriskLogDisplay">
+        <h1>Logs</h1>
         <ul>
             <li class="log-line">log line</li>
         </ul>

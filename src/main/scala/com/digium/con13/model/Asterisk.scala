@@ -55,7 +55,7 @@ object Asterisk extends Loggable {
     @OnWebSocketClose
     def onClose(statusCode: Int, reason: String) {
       logger.info(s"WebSocket closed: $statusCode - $reason")
-      AsteriskLog ! AriMessage(s"WebSocket closed $reason")
+      AsteriskLog ! AriMessage(s"WebSocket closed ($reason)")
     }
 
     @OnWebSocketError
