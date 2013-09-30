@@ -23,7 +23,8 @@ scalacOptions ++= Seq("-deprecation", "-unchecked")
 libraryDependencies ++= {
   val liftVersion = "2.5.1"
   Seq(
-    "net.liftweb"       %% "lift-webkit"        % liftVersion
+    "net.liftweb"   %% "lift-webkit"    % liftVersion,
+    "net.liftweb"   %% "lift-json"      % liftVersion
   )
 }
 
