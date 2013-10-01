@@ -13,6 +13,16 @@ import org.eclipse.jetty.websocket.api.annotations._
 import org.eclipse.jetty.websocket.api.{StatusCode, CloseStatus, Session}
 import org.eclipse.jetty.websocket.client.WebSocketClient
 
+case class Channel(id: String, state: String) {
+
+}
+
+case class Bridge(id: String) {
+
+}
+
+case class Sound(id: String)
+
 object Asterisk extends Loggable with JsonFormat {
   private var session: Option[Session] = None
   val baseUrl = new URI(Props.get("asterisk.url", "http://localhost:8088/"))

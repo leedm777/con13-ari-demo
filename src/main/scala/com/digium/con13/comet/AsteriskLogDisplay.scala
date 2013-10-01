@@ -34,8 +34,9 @@ class AsteriskLogDisplay extends CometActor with CometListener {
       </div>
     case response: AriInvocation =>
       val (id, button) = collapser
-      <div class="ari-request">
-        <div class="log-head">{button} {s"${response.method} ${response.url} - ${response.code} (${response.reason})"}</div>
+      val clazz = "log-head" + (if (response.isSuccess) "" else " error")
+      <div class="ari-invocation">
+        <div class={clazz}>{button} {s"${response.method} ${response.url} - ${response.code} (${response.reason})"}</div>
         {
           if (response.body != json.JNothing && response.body != json.JNull) {
             <div class="log-body collapse" id={id}><pre>{json.pretty(json.render(response.body))}</pre></div>
