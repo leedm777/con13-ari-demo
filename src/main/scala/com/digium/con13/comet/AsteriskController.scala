@@ -3,33 +3,30 @@ package com.digium.con13.comet
 import com.digium.con13.model._
 import com.digium.con13.util.Tapper._
 import net.liftweb.common._
-import net.liftweb.http.js.JsCmds
+import net.liftweb.http.js.{JsCmd, JsCmds}
 import net.liftweb.http.{CometListener, SHtml, CometActor}
 import com.digium.con13.util.JsonFormat
 
 class AsteriskController extends CometActor with Loggable with CometListener with JsonFormat {
-  private[this] var channels = Set.empty[String]
+  private[this] var channels = Iterable.empty[Channel]
   private[this] var bridges = Set.empty[String]
 
   protected def registerWith = AsteriskStateServer
 
-  def renderChannel(id: String) = {
-    def answer() = {
-      logger.info(s"Answer($id)")
-      Asterisk.post(s"/channels/$id/answer")
+
+  def renderChannel(chan: Channel) = {
+    def invoke(fn: Channel => Unit): () => JsCmd = () => {
+      fn(chan)
       JsCmds.Noop
     }
 
-    def hangup() = {
-      logger.info(s"Hangup($id)")
-      Asterisk.delete(s"/channels/$id")
-      JsCmds.Noop
-    }
+    val ansState = if (chan.canAnswer) "enabled" else "disabled"
 
-    ".name [ondragstart]" #> s"con13.channelDragStart(event, '$id')" &
-    ".name *+" #> id &
-      ".answer *" #> SHtml.ajaxButton("Answer", () => answer()) &
-      ".hangup *" #> SHtml.ajaxButton("Hangup", () => hangup())
+    ".name [ondragstart]" #> s"con13.channelDragStart(event, '$chan.id')" &
+    ".name *+" #> chan.id &
+      ".state *" #> chan.state &
+      ".answer *" #> SHtml.ajaxButton("Answer", invoke(_.answer()), ansState -> "true") &
+      ".hangup *" #> SHtml.ajaxButton("Hangup", invoke(_.hangup()))
   }
 
   def renderChannels =

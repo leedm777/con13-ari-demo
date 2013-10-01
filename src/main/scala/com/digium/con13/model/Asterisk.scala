@@ -13,8 +13,18 @@ import org.eclipse.jetty.websocket.api.annotations._
 import org.eclipse.jetty.websocket.api.{StatusCode, CloseStatus, Session}
 import org.eclipse.jetty.websocket.client.WebSocketClient
 
-case class Channel(id: String, state: String) {
+case class Channel(id: String, state: String) extends Loggable {
+  def canAnswer = state == "Ring"
 
+  def answer() {
+    logger.info(s"Answer($id)")
+    Asterisk.post(s"/channels/$id/answer")
+  }
+
+  def hangup() {
+    logger.info(s"Hangup($id)")
+    Asterisk.delete(s"/channels/$id")
+  }
 }
 
 case class Bridge(id: String) {
@@ -39,25 +49,27 @@ object Asterisk extends Loggable with JsonFormat {
 
   def request(method: HttpMethod, path: String, params: (String, String)*) = {
     val uri = baseUrl.resolve(s"/ari$path")
-    val req = (client.newRequest(uri).method(method) /: params) { (acc, param) =>
+    val req = (client.newRequest(uri).method(method) /: params) { (acc,
+                                                                   param) =>
       val (k, v) = param
       acc.param(k, v)
     }
     req.param("api_key", s"$username:$password")
     val resp = req.send()
 
-    AriInvocation(method, uri, resp.getStatus, resp.getReason, json.parse(resp.getContentAsString)).tap {
+    AriInvocation(method, uri, resp.getStatus, resp.getReason,
+      json.parse(resp.getContentAsString)).tap {
       AsteriskLog ! _
     }
   }
 
-  def get(path: String, params: (String, String)*)  =
+  def get(path: String, params: (String, String)*) =
     request(HttpMethod.GET, path, params: _*)
 
-  def post(path: String, params: (String, String)*)  =
+  def post(path: String, params: (String, String)*) =
     request(HttpMethod.POST, path, params: _*)
 
-  def delete (path: String, params: (String, String)*)  =
+  def delete(path: String, params: (String, String)*) =
     request(HttpMethod.DELETE, path, params: _*)
 
   def connect() {
@@ -90,15 +102,21 @@ object Asterisk extends Loggable with JsonFormat {
   }
 
   private def onEvent(event: AriEvent) {
+    def updateChannel(msg: json.JValue) {
+      val id: String = (msg \ "id").extract[String]
+      val state: String = (msg \ "state").extract[String]
+      logger.info(s"Channel state change $id")
+      AsteriskStateServer ! Channel(id, state)
+    }
     event.eventType match {
       case "StasisStart" =>
-        val id: String = (event.msg \ "channel" \ "id").extract[String]
-        logger.info(s"Channel entered $id")
-        AsteriskStateServer ! NewChannel(id)
+        updateChannel(event.msg \ "channel")
       case "StasisEnd" =>
         val id: String = (event.msg \ "channel" \ "id").extract[String]
         logger.info(s"Channel left $id")
         AsteriskStateServer ! RemoveChannel(id)
+      case "ChannelStateChange" =>
+        updateChannel(event.msg \ "channel")
       case _ => // don't care
     }
   }
