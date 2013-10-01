@@ -6,6 +6,17 @@
 </head>
 <body class="lift:content_id=main">
 <div id="main" class="lift:Surround?with=default;at=content">
+    <form class="lift:Form.ajax">
+        <div id="bridgebuilder" class="lift:BridgeBuilder">
+            <!--suppress HtmlFormInputWithoutLabel -->
+            <input name="channel" class="channel">
+            <!--suppress HtmlFormInputWithoutLabel -->
+            <input name="bridge" class="bridge">
+            <span class="build"></span>
+            <input type="submit">
+        </div>
+    </form>
+
     <div class="lift:Comet?type=AsteriskController">
         <button type="button" class="btn btn-default reconnect">
             <span class="glyphicon glyphicon-refresh"></span> Reconnect

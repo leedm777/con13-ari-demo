@@ -7,9 +7,14 @@ window.con13 = {
     $('.drop-target').removeClass('drop-target')
     $("#bridge-#{id}").addClass('drop-target')
 
-  bridgeDrop: (ev, id) ->
-    console.log("Dropping #{ev.dataTransfer.getData('channel')} on #{id}")
+  bridgeDrop: (ev, bridgeId) ->
+    channelId = ev.dataTransfer.getData('channel')
+    console.log("Dropping #{channelId} on #{bridgeId}")
     ev.preventDefault()
-    $("#bridge-#{id}").removeClass('drop-target')
+    $("#bridge-#{bridgeId}").removeClass('drop-target')
+    form = $("#bridgebuilder")
+    form.find(".channel").val(channelId)
+    form.find(".bridge").val(bridgeId)
+    form.find(".build").submit()
 }
 
