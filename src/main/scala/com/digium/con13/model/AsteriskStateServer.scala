@@ -8,15 +8,20 @@ case class NewChannel(id: String)
 
 case class RemoveChannel(id: String)
 
-case class Update(channels: Set[String])
+case class BridgeList(id: Seq[String])
+
+case class Update(channels: Set[String], bridges: Set[String])
 
 object AsteriskStateServer extends LiftActor with Loggable with ListenerManager {
-  protected def createUpdate = Update(channels)
+  protected def createUpdate = Update(channels, bridges)
 
   private var channels = Set.empty[String]
+
+  private var bridges = Set.empty[String]
 
   override protected def lowPriority = {
     case NewChannel(id) => channels += id; updateListeners()
     case RemoveChannel(id) => channels -= id; updateListeners()
+    case BridgeList(bridgeIds) => bridges = bridgeIds.toSet; updateListeners()
   }
 }

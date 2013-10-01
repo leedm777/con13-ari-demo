@@ -34,8 +34,10 @@ object Asterisk extends Loggable with JsonFormat {
       acc.param(k, v)
     }
     req.param("api_key", s"$username:$password")
-    req.send().tap { resp =>
-      AsteriskLog ! AriRequest(method, uri, resp.getStatus, resp.getReason, json.parse(resp.getContentAsString))
+    val resp = req.send()
+
+    json.parse(resp.getContentAsString).tap { body =>
+      AsteriskLog ! AriRequest(method, uri, resp.getStatus, resp.getReason, body)
     }
   }
 
@@ -98,6 +100,13 @@ object Asterisk extends Loggable with JsonFormat {
       logger.info("WebSocket connected")
       AsteriskLog ! AriMessage("WebSocket connected")
       session = Some(s)
+
+      val bridgeFields = get("/bridges").filter {
+        case json.JField("id", _) => true
+        case _ => false
+      }
+      val bridges = bridgeFields.map(_.extract[String])
+      AsteriskStateServer ! BridgeList(bridges)
     }
 
     @OnWebSocketMessage

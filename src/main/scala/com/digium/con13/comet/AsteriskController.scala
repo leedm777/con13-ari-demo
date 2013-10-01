@@ -6,7 +6,8 @@ import com.digium.con13.model.{Update, AsteriskStateServer, Asterisk}
 import net.liftweb.common.Loggable
 
 class AsteriskController extends CometActor with Loggable with CometListener {
-  private var channels = Set.empty[String]
+  private[this] var channels = Set.empty[String]
+  private[this] var bridges = Set.empty[String]
 
   protected def registerWith = AsteriskStateServer
 
@@ -31,9 +32,19 @@ class AsteriskController extends CometActor with Loggable with CometListener {
   def renderChannels =
     ".channel *" #> channels.map(renderChannel)
 
-  def renderBridges =
-    ".bridge *" #> "Put a bridge here"
+  def renderBridge(id: String) = {
+    def delete() = {
+      logger.info(s"Delete($id)")
+      Asterisk.delete(s"/bridges/$id")
+      JsCmds.Noop
+    }
 
+    ".name *" #> id &
+      ".delete *" #> SHtml.ajaxButton("Delete", () => delete())
+  }
+
+  def renderBridges =
+    ".bridge *" #> bridges.map(renderBridge)
 
   def renderReconnectButton = {
     def reconnect() = {
@@ -47,8 +58,9 @@ class AsteriskController extends CometActor with Loggable with CometListener {
   }
 
   override def lowPriority = {
-    case Update(c) =>
+    case Update(c, b) =>
       channels = c
+      bridges = b
       reRender()
   }
 
