@@ -42,6 +42,7 @@ libraryDependencies ++= {
   val jettyVersion = "9.0.5.v20130815"
   Seq(
     "org.eclipse.jetty"           %  "jetty-webapp"     % jettyVersion % "container; test",
+    "org.eclipse.jetty"           %  "jetty-client"     % jettyVersion,
     "org.eclipse.jetty.websocket" %  "websocket-client" % jettyVersion
   )
 }

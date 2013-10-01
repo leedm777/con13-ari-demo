@@ -10,6 +10,8 @@ import org.apache.http.client.utils.URIBuilder
 import net.liftweb.json
 import com.digium.con13.util.Tapper._
 import com.digium.con13.util.JsonFormat
+import org.eclipse.jetty.client.HttpClient
+import org.eclipse.jetty.http.HttpMethod
 
 object Asterisk extends Loggable with JsonFormat {
   private var session: Option[Session] = None
@@ -17,11 +19,34 @@ object Asterisk extends Loggable with JsonFormat {
   val username = Props.get("asterisk.ari.user", "ari")
   val password = Props.get("asterisk.ari.password", "ari")
   val app = Props.get("asterisk.ari.app", "con13")
-  val client = new WebSocketClient().tap {
-    c =>
-      c.getPolicy.setIdleTimeout(-1)
-      c.start()
+  val wsClient = new WebSocketClient().tap { c =>
+    c.getPolicy.setIdleTimeout(-1)
+    c.start()
   }
+  val client = new HttpClient().tap { c =>
+    c.start()
+  }
+
+  def request(method: HttpMethod, path: String, params: (String, String)*) = {
+    val uri = baseUrl.resolve(s"/ari$path")
+    val req = (client.newRequest(uri).method(method) /: params) { (acc, param) =>
+      val (k, v) = param
+      acc.param(k, v)
+    }
+    req.param("api_key", s"$username:$password")
+    req.send().tap { resp =>
+      AsteriskLog ! AriResponse(method, uri, resp.getStatus, resp.getReason, json.parse(resp.getContentAsString))
+    }
+  }
+
+  def get(path: String, params: (String, String)*)  =
+    request(HttpMethod.GET, path, params: _*)
+
+  def post(path: String, params: (String, String)*)  =
+    request(HttpMethod.POST, path, params: _*)
+
+  def delete (path: String, params: (String, String)*)  =
+    request(HttpMethod.DELETE, path, params: _*)
 
   def connect() {
     disconnect()
@@ -36,7 +61,7 @@ object Asterisk extends Loggable with JsonFormat {
     }
 
     logger.info(s"Connecting to $destUri")
-    client.connect(AriSocket, destUri)
+    wsClient.connect(AriSocket, destUri)
   }
 
   def disconnect() {
@@ -49,7 +74,7 @@ object Asterisk extends Loggable with JsonFormat {
   }
 
   def shutdown() {
-    client.stop()
+    wsClient.stop()
   }
 
   private def onEvent(event: AriEvent) {

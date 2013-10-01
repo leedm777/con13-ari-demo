@@ -16,6 +16,9 @@
           </value>
         </option>
         <option name="RIGHT_MARGIN" value="80" />
+        <ScalaCodeStyleSettings>
+          <option name="PLACE_CLOSURE_PARAMETERS_ON_NEW_LINE" value="false" />
+        </ScalaCodeStyleSettings>
         <XML>
           <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>

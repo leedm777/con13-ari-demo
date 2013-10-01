@@ -5,6 +5,8 @@ import net.liftweb.http.ListenerManager
 import net.liftweb.json
 import net.liftweb.common.Loggable
 import com.digium.con13.util.JsonFormat
+import org.eclipse.jetty.http.HttpMethod
+import java.net.URI
 
 sealed abstract class LogItem
 
@@ -22,9 +24,9 @@ sealed case class AriEvent(msg: json.JValue) extends LogItem with JsonFormat {
   override def toString: String = json.compact(json.render(msg))
 }
 
-sealed case class AriResponse(method: String, url: String, code: Int, codeText: String, body: json.JValue) extends LogItem {
+sealed case class AriResponse(method: HttpMethod, url: URI, code: Int, reason: String, body: json.JValue) extends LogItem {
 
-  override def toString: String = s"$method $url - $codeText"
+  override def toString: String = s"$method $url - $reason"
 }
 
 case class Logs(items: List[LogItem])
