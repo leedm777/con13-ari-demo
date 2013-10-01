@@ -26,7 +26,8 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
       JsCmds.Noop
     }
 
-    ".name *" #> id &
+    ".name [ondragstart]" #> s"con13.channelDragStart(event, '$id')" &
+    ".name *+" #> id &
       ".answer *" #> SHtml.ajaxButton("Answer", () => answer()) &
       ".hangup *" #> SHtml.ajaxButton("Hangup", () => hangup())
   }
@@ -45,12 +46,15 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
       JsCmds.Noop
     }
 
-    ".name *" #> id &
+    ".bridge [ondragover]" #> s"con13.bridgeDragOver(event, '$id')" &
+      ".bridge [ondrop]" #> s"con13.bridgeDrop(event, '$id')" &
+      ".bridge [id]" #> s"bridge-$id" &
+      ".name *" #> id &
       ".delete *" #> SHtml.ajaxButton("Delete", () => delete())
   }
 
   def renderCreate = {
-    var bridgeType = "mixing"
+    var bridgeType = "holding"
     def create() = {
       logger.info(s"Create")
       Asterisk.post("/bridges", "type" -> bridgeType).tap { inv =>
@@ -65,7 +69,7 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
   }
 
   def renderBridges =
-    ".bridge *" #> bridges.map(renderBridge) & renderCreate
+      ".bridge" #> bridges.map(renderBridge) & renderCreate
 
   def renderReconnectButton = {
     def reconnect() = {
