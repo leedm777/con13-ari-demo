@@ -32,7 +32,7 @@ class AsteriskLogDisplay extends CometActor with CometListener {
         <div class="log-head">{button} {event.eventHeader}</div>
         <div class="log-body collapse" id={id}><pre>{json.pretty(json.render(event.msg))}</pre></div>
       </div>
-    case response: AriRequest =>
+    case response: AriInvocation =>
       val (id, button) = collapser
       <div class="ari-request">
         <div class="log-head">{button} {s"${response.method} ${response.url} - ${response.code} (${response.reason})"}</div>

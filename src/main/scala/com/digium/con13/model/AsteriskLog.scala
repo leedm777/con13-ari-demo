@@ -24,9 +24,11 @@ sealed case class AriEvent(msg: json.JValue) extends LogItem with JsonFormat {
   override def toString: String = json.compact(json.render(msg))
 }
 
-sealed case class AriRequest(method: HttpMethod, url: URI, code: Int, reason: String, body: json.JValue) extends LogItem {
+sealed case class AriInvocation(method: HttpMethod, url: URI, code: Int, reason: String, body: json.JValue) extends LogItem {
 
   override def toString: String = s"$method $url - $reason"
+
+  def isSuccess = (code / 100) == 2
 }
 
 case class Logs(items: List[LogItem])

@@ -1,11 +1,13 @@
 package com.digium.con13.comet
 
-import net.liftweb.http.{CometListener, SHtml, CometActor}
+import com.digium.con13.model._
+import com.digium.con13.util.Tapper._
+import net.liftweb.common._
 import net.liftweb.http.js.JsCmds
-import com.digium.con13.model.{Update, AsteriskStateServer, Asterisk}
-import net.liftweb.common.Loggable
+import net.liftweb.http.{CometListener, SHtml, CometActor}
+import com.digium.con13.util.JsonFormat
 
-class AsteriskController extends CometActor with Loggable with CometListener {
+class AsteriskController extends CometActor with Loggable with CometListener with JsonFormat {
   private[this] var channels = Set.empty[String]
   private[this] var bridges = Set.empty[String]
 
@@ -35,7 +37,11 @@ class AsteriskController extends CometActor with Loggable with CometListener {
   def renderBridge(id: String) = {
     def delete() = {
       logger.info(s"Delete($id)")
-      Asterisk.delete(s"/bridges/$id")
+      Asterisk.delete(s"/bridges/$id").tap { inv =>
+        if (inv.isSuccess) {
+          AsteriskStateServer ! RemoveBridge(id)
+        }
+      }
       JsCmds.Noop
     }
 
@@ -43,8 +49,23 @@ class AsteriskController extends CometActor with Loggable with CometListener {
       ".delete *" #> SHtml.ajaxButton("Delete", () => delete())
   }
 
+  def renderCreate = {
+    var bridgeType = "mixing"
+    def create() = {
+      logger.info(s"Create")
+      Asterisk.post("/bridges", "type" -> bridgeType).tap { inv =>
+        if (inv.isSuccess) {
+          AsteriskStateServer ! NewBridge((inv.body \ "id").extract[String])
+        }
+      }
+      JsCmds.Noop
+    }
+    ".create" #> SHtml.ajaxButton("Create", () => create()) &
+      ".bridge-type" #> SHtml.ajaxSelectElem("holding" :: "mixing" :: Nil, Full(bridgeType))(bridgeType = _)
+  }
+
   def renderBridges =
-    ".bridge *" #> bridges.map(renderBridge)
+    ".bridge *" #> bridges.map(renderBridge) & renderCreate
 
   def renderReconnectButton = {
     def reconnect() = {

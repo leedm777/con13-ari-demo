@@ -1,17 +1,17 @@
 package com.digium.con13.model
 
-import java.net.URI
-import org.eclipse.jetty.websocket.client.WebSocketClient
-import org.eclipse.jetty.websocket.api.annotations._
-import net.liftweb.common.Loggable
-import net.liftweb.util.Props
-import org.eclipse.jetty.websocket.api.{StatusCode, CloseStatus, Session}
-import org.apache.http.client.utils.URIBuilder
-import net.liftweb.json
-import com.digium.con13.util.Tapper._
 import com.digium.con13.util.JsonFormat
+import com.digium.con13.util.Tapper._
+import java.net.URI
+import net.liftweb.common.Loggable
+import net.liftweb.json
+import net.liftweb.util.Props
+import org.apache.http.client.utils.URIBuilder
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.http.HttpMethod
+import org.eclipse.jetty.websocket.api.annotations._
+import org.eclipse.jetty.websocket.api.{StatusCode, CloseStatus, Session}
+import org.eclipse.jetty.websocket.client.WebSocketClient
 
 object Asterisk extends Loggable with JsonFormat {
   private var session: Option[Session] = None
@@ -36,8 +36,8 @@ object Asterisk extends Loggable with JsonFormat {
     req.param("api_key", s"$username:$password")
     val resp = req.send()
 
-    json.parse(resp.getContentAsString).tap { body =>
-      AsteriskLog ! AriRequest(method, uri, resp.getStatus, resp.getReason, body)
+    AriInvocation(method, uri, resp.getStatus, resp.getReason, json.parse(resp.getContentAsString)).tap {
+      AsteriskLog ! _
     }
   }
 
@@ -101,7 +101,7 @@ object Asterisk extends Loggable with JsonFormat {
       AsteriskLog ! AriMessage("WebSocket connected")
       session = Some(s)
 
-      val bridgeFields = get("/bridges").filter {
+      val bridgeFields = get("/bridges").body.filter {
         case json.JField("id", _) => true
         case _ => false
       }

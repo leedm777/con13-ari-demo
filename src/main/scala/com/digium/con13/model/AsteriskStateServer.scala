@@ -10,6 +10,10 @@ case class RemoveChannel(id: String)
 
 case class BridgeList(id: Seq[String])
 
+case class NewBridge(id: String)
+
+case class RemoveBridge(id: String)
+
 case class Update(channels: Set[String], bridges: Set[String])
 
 object AsteriskStateServer extends LiftActor with Loggable with ListenerManager {
@@ -23,5 +27,7 @@ object AsteriskStateServer extends LiftActor with Loggable with ListenerManager 
     case NewChannel(id) => channels += id; updateListeners()
     case RemoveChannel(id) => channels -= id; updateListeners()
     case BridgeList(bridgeIds) => bridges = bridgeIds.toSet; updateListeners()
+    case NewBridge(id) => bridges += id; updateListeners()
+    case RemoveBridge(id) => bridges -= id; updateListeners()
   }
 }
