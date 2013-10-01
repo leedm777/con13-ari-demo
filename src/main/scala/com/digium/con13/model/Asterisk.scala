@@ -35,7 +35,7 @@ object Asterisk extends Loggable with JsonFormat {
     }
     req.param("api_key", s"$username:$password")
     req.send().tap { resp =>
-      AsteriskLog ! AriResponse(method, uri, resp.getStatus, resp.getReason, json.parse(resp.getContentAsString))
+      AsteriskLog ! AriRequest(method, uri, resp.getStatus, resp.getReason, json.parse(resp.getContentAsString))
     }
   }
 

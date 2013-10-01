@@ -16,7 +16,16 @@ class AsteriskController extends CometActor with Loggable with CometListener {
       Asterisk.post(s"/channels/$id/answer")
       JsCmds.Noop
     }
-    ".name *" #> id & ".answer *" #> SHtml.ajaxButton("Answer", () => answer())
+
+    def hangup() = {
+      logger.info(s"Hangup($id)")
+      Asterisk.delete(s"/channels/$id")
+      JsCmds.Noop
+    }
+
+    ".name *" #> id &
+      ".answer *" #> SHtml.ajaxButton("Answer", () => answer()) &
+      ".hangup *" #> SHtml.ajaxButton("Hangup", () => hangup())
   }
 
   def renderChannels =

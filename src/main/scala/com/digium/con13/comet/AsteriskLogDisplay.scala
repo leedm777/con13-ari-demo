@@ -28,12 +28,12 @@ class AsteriskLogDisplay extends CometActor with CometListener {
   def renderLogItem(logItem: LogItem): xml.NodeSeq = logItem match {
     case event: AriEvent =>
       val (id, button) = collapser
-      <div>
+      <div class="ari-event">
         <div class="log-head">{button} {event.eventHeader}</div>
         <div class="log-body collapse" id={id}><pre>{json.pretty(json.render(event.msg))}</pre></div>
       </div>
-    case response: AriResponse =>
-      <div>
+    case response: AriRequest =>
+      <div class="ari-request">
         <div class="log-head">{s"${response.method} ${response.url} - ${response.code} (${response.reason})"}</div>
         {
           if (response.body != json.JNothing && response.body != json.JNull) {
@@ -44,7 +44,7 @@ class AsteriskLogDisplay extends CometActor with CometListener {
         }
       </div>
     case AriMessage(msg) =>
-      <div>
+      <div class="ari-message">
         <div class="log-head">{msg}</div>
       </div>
   }
