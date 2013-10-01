@@ -4,19 +4,20 @@ import net.liftweb.actor.LiftActor
 import net.liftweb.http.ListenerManager
 import net.liftweb.json
 import net.liftweb.common.Loggable
+import com.digium.con13.util.JsonFormat
 
 sealed abstract class LogItem
 
 sealed case class AriMessage(msg: String) extends LogItem
 
-sealed case class AriEvent(msg: json.JValue) extends LogItem {
-  implicit val formats = json.DefaultFormats
+sealed case class AriEvent(msg: json.JValue) extends LogItem with JsonFormat {
+  val eventType = (msg \\ "type").extract[String]
 
   def eventHeader = {
-    val msgType = (msg \\ "type").extract[String]
     val ids = json.compact(json.render(msg \\ "id"))
-    s"$msgType $ids"
+    s"$eventType $ids"
   }
+
 
   override def toString: String = json.compact(json.render(msg))
 }
