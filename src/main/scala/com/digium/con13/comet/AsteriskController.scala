@@ -24,7 +24,7 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
     }
 
     val ansState = if (chan.canAnswer) "enabled" else "disabled"
-    var sound: Box[Sound] = Empty
+    var sound: Box[Sound] = sounds.find(_.id == "demo-congrats")
 
     def selectSound(s: Sound) = {
       logger.info(s"Selecting ${s.id}")
@@ -62,7 +62,7 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
       JsCmds.Noop
     }
 
-    var sound: Box[Sound] = Empty
+    var sound: Box[Sound] = sounds.find(_.id == "demo-congrats")
 
     def selectSound(s: Sound) = {
       logger.info(s"Selecting ${s.id}")
