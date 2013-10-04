@@ -28,12 +28,15 @@ case class Channel(id: String, state: String) extends Loggable {
 
   def play(sound: Sound) = {
     logger.info(s"Play($id, ${sound.id}")
-    Asterisk.post(s"/channels/$id/play", "media" -> s"sound:${sound.id}")
+    Asterisk.post(s"/channels/$id/play", "media" -> s"sound:${sound.id}").tap { invocation =>
+      if (invocation.isSuccess) {
+        AsteriskStateServer ! Playback.fromJson(invocation.body)
+      }
+    }
   }
 }
 
 case class Bridge(id: String, bridgeType: String) extends Loggable {
-
   def delete() = {
     logger.info(s"Delete($id)")
     Asterisk.delete(s"/bridges/$id")
@@ -42,7 +45,11 @@ case class Bridge(id: String, bridgeType: String) extends Loggable {
 
   def play(sound: Sound) = {
     logger.info(s"Play($id, ${sound.id}")
-    Asterisk.post(s"/bridges/$id/play", "media" -> s"sound:${sound.id}")
+    Asterisk.post(s"/bridges/$id/play", "media" -> s"sound:${sound.id}").tap { invocation =>
+      if (invocation.isSuccess) {
+        AsteriskStateServer ! Playback.fromJson(invocation.body)
+      }
+    }
   }
 }
 
@@ -75,6 +82,24 @@ object Sound extends JsonFormat {
   def fromJson(parsed: json.JValue): Sound = {
     val langs = (parsed \\ "").children.map(_.extract[String])
     Sound((parsed \ "id").extract[String], langs)
+  }
+}
+
+case class Playback(id: String) extends Loggable {
+  def control(op: String) = {
+    logger.info(s"$id: $op")
+    Asterisk.post(s"/playback/$id/control", "operation" -> op)
+  }
+
+  def stop() = {
+    logger.info(s"Stopping $id")
+    Asterisk.delete(s"/playback/$id")
+  }
+}
+
+object Playback extends JsonFormat {
+  def fromJson(parsed: json.JValue): Playback = {
+    Playback((parsed \ "id").extract[String])
   }
 }
 
@@ -160,6 +185,10 @@ object Asterisk extends Loggable with JsonFormat {
         AsteriskStateServer ! RemoveChannel(id)
       case "ChannelStateChange" =>
         updateChannel(event.msg \ "channel")
+      case "PlaybackStateChange" if (event.msg \ "playback" \ "state").extract[String] == "done" =>
+        val id: String = (event.msg \ "playback" \ "id").extract[String]
+        logger.info(s"Playback done $id")
+        AsteriskStateServer ! RemovePlayback(id)
       case _ => // don't care
     }
   }
@@ -177,6 +206,10 @@ object Asterisk extends Loggable with JsonFormat {
 
       val sounds = get("/sounds").body.children.map(Sound.fromJson)
       AsteriskStateServer ! SoundList(sounds)
+
+      // Clear out the channel and playback lists
+      AsteriskStateServer ! ChannelList(Nil)
+      AsteriskStateServer ! PlaybackList(Nil)
     }
 
     @OnWebSocketMessage

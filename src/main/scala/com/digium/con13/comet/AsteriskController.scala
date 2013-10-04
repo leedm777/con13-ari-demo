@@ -10,6 +10,7 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
   private[this] var channels = Iterable.empty[Channel]
   private[this] var bridges = Iterable.empty[Bridge]
   private[this] var sounds = Seq.empty[Sound]
+  private[this] var playbacks = Iterable.empty[Playback]
 
   protected def registerWith = AsteriskStateServer
 
@@ -104,6 +105,27 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
   def renderBridges =
       ".bridge" #> bridges.map(renderBridge) & renderCreate
 
+  def renderPlayback(playback: Playback) = {
+    def control(op: String) = () => {
+      playback.control(op)
+      JsCmds.Noop
+    }
+    val stop = () => {
+      playback.stop()
+      JsCmds.Noop
+    }
+    ".id *" #> playback.id  &
+      ".restart" #> SHtml.ajaxButton("Restart", control("restart")) &
+      ".pause" #> SHtml.ajaxButton("Pause", control("pause")) &
+      ".unpause" #> SHtml.ajaxButton("Unpause", control("unpause")) &
+      ".reverse" #> SHtml.ajaxButton("Reverse", control("reverse")) &
+      ".forward" #> SHtml.ajaxButton("Forward", control("forward")) &
+      ".stop" #> SHtml.ajaxButton("Stop", stop)
+  }
+
+  def renderPlaybacks =
+    ".playback" #> playbacks.map(renderPlayback)
+
   def renderReconnectButton = {
     def reconnect() = {
       logger.info("Reconnecting")
@@ -116,14 +138,16 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
   }
 
   override def lowPriority = {
-    case Update(c, b, s) =>
+    case Update(c, b, s, p) =>
       channels = c
       bridges = b
       sounds = s
+      playbacks = p
       reRender()
   }
 
   def render = "#channels *" #> renderChannels &
     "#bridges *" #> renderBridges &
+    "#playbacks *" #> renderPlaybacks &
     ".reconnect" #> renderReconnectButton
 }
