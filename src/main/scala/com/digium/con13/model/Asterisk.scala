@@ -25,6 +25,11 @@ case class Channel(id: String, state: String) extends Loggable {
     logger.info(s"Hangup($id)")
     Asterisk.delete(s"/channels/$id")
   }
+
+  def play(sound: Sound) = {
+    logger.info(s"Play($id, ${sound.id}")
+    Asterisk.post(s"/channels/$id/play", "media" -> s"sound:${sound.id}")
+  }
 }
 
 case class Bridge(id: String) extends Loggable {
@@ -37,6 +42,11 @@ case class Bridge(id: String) extends Loggable {
     logger.info(s"Delete($id)")
     Asterisk.delete(s"/bridges/$id")
     AsteriskStateServer ! RemoveBridge(id)
+  }
+
+  def play(sound: Sound) = {
+    logger.info(s"Play($id, ${sound.id}")
+    Asterisk.post(s"/bridges/$id/play", "media" -> s"sound:${sound.id}")
   }
 }
 
@@ -55,7 +65,16 @@ object Bridge extends JsonFormat with Loggable {
   }
 }
 
-case class Sound(id: String)
+case class Sound(id: String, langs: Seq[String]) extends Ordered[Sound] {
+  def compare(that: Sound): Int = id.compare(that.id)
+}
+
+object Sound extends JsonFormat {
+  def fromJson(parsed: json.JValue): Sound = {
+    val langs = (parsed \\ "").children.map(_.extract[String])
+    Sound((parsed \ "id").extract[String], langs)
+  }
+}
 
 object Asterisk extends Loggable with JsonFormat {
   private var session: Option[Session] = None
@@ -153,6 +172,9 @@ object Asterisk extends Loggable with JsonFormat {
 
       val bridges = get("/bridges").body.children.map(Bridge.fromJson)
       AsteriskStateServer ! BridgeList(bridges)
+
+      val sounds = get("/sounds").body.children.map(Sound.fromJson)
+      AsteriskStateServer ! SoundList(sounds)
     }
 
     @OnWebSocketMessage

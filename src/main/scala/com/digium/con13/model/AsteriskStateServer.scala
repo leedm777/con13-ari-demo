@@ -8,16 +8,20 @@ case class RemoveChannel(id: String)
 
 case class BridgeList(id: Seq[Bridge])
 
+case class SoundList(id: Seq[Sound])
+
 case class RemoveBridge(id: String)
 
-case class Update(channels: Iterable[Channel], bridges: Iterable[Bridge])
+case class Update(channels: Iterable[Channel], bridges: Iterable[Bridge], sounds: Seq[Sound])
 
 object AsteriskStateServer extends LiftActor with Loggable with ListenerManager {
-  protected def createUpdate = Update(channels.values, bridges.values)
+  protected def createUpdate = Update(channels.values, bridges.values, sounds)
 
   private var channels = Map.empty[String, Channel]
 
   private var bridges = Map.empty[String, Bridge]
+
+  private var sounds = Seq.empty[Sound]
 
   override protected def lowPriority = {
     case chan: Channel => channels += (chan.id -> chan); updateListeners()
@@ -25,6 +29,10 @@ object AsteriskStateServer extends LiftActor with Loggable with ListenerManager 
 
     case BridgeList(bridgeList) =>
       bridges = bridgeList.map(b => b.id -> b).toMap
+      updateListeners()
+
+    case SoundList(soundList) =>
+      sounds = soundList.sorted
       updateListeners()
 
     case bridge: Bridge =>
