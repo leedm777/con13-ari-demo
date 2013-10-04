@@ -32,11 +32,7 @@ case class Channel(id: String, state: String) extends Loggable {
   }
 }
 
-case class Bridge(id: String) extends Loggable {
-  def addChannel(channelId: String) = {
-    logger.info(s"Adding $channelId to $id")
-    Asterisk.post(s"/bridges/$id/addChannel", "channel" -> channelId)
-  }
+case class Bridge(id: String, bridgeType: String) extends Loggable {
 
   def delete() = {
     logger.info(s"Delete($id)")
@@ -52,7 +48,8 @@ case class Bridge(id: String) extends Loggable {
 
 object Bridge extends JsonFormat with Loggable {
   def fromJson(parsed: json.JValue): Bridge = {
-    Bridge((parsed \ "id").extract[String])
+    Bridge((parsed \ "id").extract[String],
+      (parsed \ "bridge_type").extract[String])
   }
 
   def create(bridgeType: String) = {
@@ -62,6 +59,11 @@ object Bridge extends JsonFormat with Loggable {
         AsteriskStateServer ! fromJson(invocation.body)
       }
     }
+  }
+
+  def addChannel(bridgeId: String, channelId: String) = {
+    logger.info(s"Adding $channelId to $bridgeId")
+    Asterisk.post(s"/bridges/$bridgeId/addChannel", "channel" -> channelId)
   }
 }
 

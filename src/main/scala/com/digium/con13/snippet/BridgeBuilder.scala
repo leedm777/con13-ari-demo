@@ -12,8 +12,7 @@ object BridgeBuilder extends Loggable {
     var bridgeId = ""
 
     def process(): JsCmd = {
-      val bridge = Bridge(bridgeId)
-      bridge.addChannel(channelId)
+      Bridge.addChannel(bridgeId, channelId)
       JsCmds.Noop
     }
 

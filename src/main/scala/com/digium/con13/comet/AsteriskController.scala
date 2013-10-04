@@ -85,6 +85,7 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
       ".bridge [ondrop]" #> s"con13.bridgeDrop(event, '${bridge.id}')" &
       ".bridge [id]" #> s"bridge-${bridge.id}" &
       ".name *" #> bridge.id &
+      ".type *" #> bridge.bridgeType &
       ".delete" #> SHtml.ajaxButton("Delete", () => delete()) &
       ".sound" #> SHtml.ajaxSelectElem(sounds, sound)(selectSound) &
       ".play" #> SHtml.ajaxButton("Play", play _)
