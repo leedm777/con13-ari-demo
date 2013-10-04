@@ -17,36 +17,42 @@
         </div>
     </form>
 
-    <div class="lift:Comet?type=AsteriskController">
-        <button type="button" class="btn btn-default reconnect">
-            <span class="glyphicon glyphicon-refresh"></span> Reconnect
-        </button>
-        <div id="channels">
-            <h1>Channels</h1>
-            <div class="channel row">
-                <span class="name col-md-2" draggable="true"><span class="glyphicon glyphicon-bell"></span></span>
-                <span class="state col-md-1"></span>
-                <span class="answer col-md-1"></span>
-                <span class="hangup col-md-1"></span>
+    <div>
+        <div class="lift:Comet?type=AsteriskController">
+            <button type="button" class="btn btn-default reconnect">
+                <span class="glyphicon glyphicon-refresh"></span> Reconnect
+            </button>
+
+            <div id="channels">
+                <h1>Channels</h1>
+
+                <div class="channel row">
+                    <span class="name col-md-2" draggable="true"><span
+                            class="glyphicon glyphicon-bell"></span></span>
+                    <span class="state col-md-1"></span>
+                    <span class="answer col-md-1"></span>
+                    <span class="hangup col-md-1"></span>
+                </div>
+            </div>
+            <div id="bridges">
+                <h1>Bridges</h1>
+
+                <div class="row">
+                    <span class="bridge-type col-md-2"></span>
+                    <span class="create col-md-1"></span>
+                </div>
+                <div class="bridge row">
+                    <span class="name col-md-4"></span>
+                    <span class="delete col-md-1"></span>
+                </div>
             </div>
         </div>
-        <div id="bridges">
-            <h1>Bridges</h1>
-            <div class="row">
-                <span class="bridge-type col-md-2"></span>
-                <span class="create col-md-1"></span>
-            </div>
-            <div class="bridge row">
-                <span class="name col-md-4"></span>
-                <span class="delete col-md-1"></span>
-            </div>
+        <div class="ari-logs lift:Comet?type=AsteriskLogDisplay">
+            <h1>Logs</h1>
+            <ul>
+                <li class="log-line">log line</li>
+            </ul>
         </div>
-    </div>
-    <div class="ari-logs lift:Comet?type=AsteriskLogDisplay">
-        <h1>Logs</h1>
-        <ul>
-            <li class="log-line">log line</li>
-        </ul>
     </div>
 </div>
 </body>

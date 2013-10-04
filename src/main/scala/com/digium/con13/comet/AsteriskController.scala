@@ -21,7 +21,7 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
 
     val ansState = if (chan.canAnswer) "enabled" else "disabled"
 
-    ".name [ondragstart]" #> s"con13.channelDragStart(event, '$chan.id')" &
+    ".name [ondragstart]" #> s"con13.channelDragStart(event, '${chan.id}')" &
     ".name *+" #> chan.id &
       ".state *" #> chan.state &
       ".answer *" #> SHtml.ajaxButton("Answer", invoke(_.answer()), ansState -> "true") &

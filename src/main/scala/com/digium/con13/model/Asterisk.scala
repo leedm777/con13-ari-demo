@@ -30,8 +30,7 @@ case class Channel(id: String, state: String) extends Loggable {
 case class Bridge(id: String) extends Loggable {
   def addChannel(channelId: String) = {
     logger.info(s"Adding $channelId to $id")
-    val res = Asterisk.post(s"/bridges/$id/addChannel", "channel" -> channelId)
-
+    Asterisk.post(s"/bridges/$id/addChannel", "channel" -> channelId)
   }
 
   def delete() = {
@@ -74,15 +73,13 @@ object Asterisk extends Loggable with JsonFormat {
 
   def request(method: HttpMethod, path: String, params: (String, String)*) = {
     val uri = baseUrl.resolve(s"/ari$path")
-    val req = (client.newRequest(uri).method(method) /: params) { (acc,
-                                                                   param) =>
-      val (k, v) = param
-      acc.param(k, v)
+    val req = (client.newRequest(uri).method(method) /: params) {
+      case (acc, (k, v)) => acc.param(k, v)
     }
     req.param("api_key", s"$username:$password")
     val resp = req.send()
 
-    AriInvocation(method, uri, resp.getStatus, resp.getReason,
+    AriInvocation(method, req.getURI, resp.getStatus, resp.getReason,
       json.parse(resp.getContentAsString)).tap {
       AsteriskLog ! _
     }
