@@ -1,7 +1,6 @@
 package com.digium.con13.comet
 
 import com.digium.con13.model._
-import com.digium.con13.util.Tapper._
 import net.liftweb.common._
 import net.liftweb.http.js.{JsCmd, JsCmds}
 import net.liftweb.http.{CometListener, SHtml, CometActor}
@@ -9,7 +8,7 @@ import com.digium.con13.util.JsonFormat
 
 class AsteriskController extends CometActor with Loggable with CometListener with JsonFormat {
   private[this] var channels = Iterable.empty[Channel]
-  private[this] var bridges = Set.empty[String]
+  private[this] var bridges = Iterable.empty[Bridge]
 
   protected def registerWith = AsteriskStateServer
 
@@ -32,33 +31,23 @@ class AsteriskController extends CometActor with Loggable with CometListener wit
   def renderChannels =
     ".channel *" #> channels.map(renderChannel)
 
-  def renderBridge(id: String) = {
+  def renderBridge(bridge: Bridge) = {
     def delete() = {
-      logger.info(s"Delete($id)")
-      Asterisk.delete(s"/bridges/$id").tap { inv =>
-        if (inv.isSuccess) {
-          AsteriskStateServer ! RemoveBridge(id)
-        }
-      }
+      bridge.delete()
       JsCmds.Noop
     }
 
-    ".bridge [ondragover]" #> s"con13.bridgeDragOver(event, '$id')" &
-      ".bridge [ondrop]" #> s"con13.bridgeDrop(event, '$id')" &
-      ".bridge [id]" #> s"bridge-$id" &
-      ".name *" #> id &
+    ".bridge [ondragover]" #> s"con13.bridgeDragOver(event, '${bridge.id}')" &
+      ".bridge [ondrop]" #> s"con13.bridgeDrop(event, '${bridge.id}')" &
+      ".bridge [id]" #> s"bridge-${bridge.id}" &
+      ".name *" #> bridge.id &
       ".delete *" #> SHtml.ajaxButton("Delete", () => delete())
   }
 
   def renderCreate = {
     var bridgeType = "holding"
     def create() = {
-      logger.info(s"Create")
-      Asterisk.post("/bridges", "type" -> bridgeType).tap { inv =>
-        if (inv.isSuccess) {
-          AsteriskStateServer ! NewBridge((inv.body \ "id").extract[String])
-        }
-      }
+      Bridge.create(bridgeType)
       JsCmds.Noop
     }
     ".create" #> SHtml.ajaxButton("Create", () => create()) &

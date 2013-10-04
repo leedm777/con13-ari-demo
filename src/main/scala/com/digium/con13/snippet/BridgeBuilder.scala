@@ -3,22 +3,22 @@ package com.digium.con13.snippet
 import net.liftweb.http.SHtml
 import net.liftweb.util.Helpers._
 import net.liftweb.http.js.{JsCmds, JsCmd}
-import com.digium.con13.model.Asterisk
+import com.digium.con13.model._
 import net.liftweb.common.Loggable
 
 object BridgeBuilder extends Loggable {
   def render = {
-    var channel = ""
-    var bridge = ""
+    var channelId = ""
+    var bridgeId = ""
 
     def process(): JsCmd = {
-      logger.info(s"Adding $channel to $bridge")
-      Asterisk.post(s"/bridges/$bridge/addChannel", "channel" -> channel)
+      val bridge = Bridge(bridgeId)
+      bridge.addChannel(channelId)
       JsCmds.Noop
     }
 
-    ".channel" #> SHtml.text(channel, channel = _) &
-      ".bridge" #> SHtml.text(bridge, bridge = _) &
+    ".channel" #> SHtml.text(channelId, channelId = _) &
+      ".bridge" #> SHtml.text(bridgeId, bridgeId = _) &
       ".build" #> SHtml.hidden(process)
   }
 }

@@ -16,19 +16,44 @@ import org.eclipse.jetty.websocket.client.WebSocketClient
 case class Channel(id: String, state: String) extends Loggable {
   def canAnswer = state == "Ring"
 
-  def answer() {
+  def answer() = {
     logger.info(s"Answer($id)")
     Asterisk.post(s"/channels/$id/answer")
   }
 
-  def hangup() {
+  def hangup() = {
     logger.info(s"Hangup($id)")
     Asterisk.delete(s"/channels/$id")
   }
 }
 
-case class Bridge(id: String) {
+case class Bridge(id: String) extends Loggable {
+  def addChannel(channelId: String) = {
+    logger.info(s"Adding $channelId to $id")
+    val res = Asterisk.post(s"/bridges/$id/addChannel", "channel" -> channelId)
 
+  }
+
+  def delete() = {
+    logger.info(s"Delete($id)")
+    Asterisk.delete(s"/bridges/$id")
+    AsteriskStateServer ! RemoveBridge(id)
+  }
+}
+
+object Bridge extends JsonFormat with Loggable {
+  def fromJson(parsed: json.JValue): Bridge = {
+    Bridge((parsed \ "id").extract[String])
+  }
+
+  def create(bridgeType: String) = {
+    logger.info(s"Create")
+    Asterisk.post("/bridges", "type" -> bridgeType).tap { invocation =>
+      if (invocation.isSuccess) {
+        AsteriskStateServer ! fromJson(invocation.body)
+      }
+    }
+  }
 }
 
 case class Sound(id: String)
@@ -129,11 +154,7 @@ object Asterisk extends Loggable with JsonFormat {
       AsteriskLog ! AriMessage("WebSocket connected")
       session = Some(s)
 
-      val bridgeFields = get("/bridges").body.filter {
-        case json.JField("id", _) => true
-        case _ => false
-      }
-      val bridges = bridgeFields.map(_.extract[String])
+      val bridges = get("/bridges").body.children.map(Bridge.fromJson)
       AsteriskStateServer ! BridgeList(bridges)
     }
 
