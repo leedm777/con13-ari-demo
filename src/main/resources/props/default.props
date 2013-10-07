@@ -1,1 +1,4 @@
-asterisk.url=http://localhost:8088
+asterisk.url=http://localhost:8088/
+asterisk.ari.user=ari
+asterisk.ari.password=ari
+asterisk.ari.app=con13

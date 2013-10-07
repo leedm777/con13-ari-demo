@@ -1,8 +1,8 @@
 // -*- scala -*-
 
-organization := "com.digium"
+organization := "com.digium.con13"
 
-name := "con13-server"
+name := "ari-demo"
 
 version := "0.0.1"
 
@@ -39,7 +39,7 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= {
-  val jettyVersion = "9.0.5.v20130815"
+  val jettyVersion = "9.0.6.v20130930"
   Seq(
     "org.eclipse.jetty"           %  "jetty-webapp"     % jettyVersion % "container; test",
     "org.eclipse.jetty"           %  "jetty-client"     % jettyVersion,
